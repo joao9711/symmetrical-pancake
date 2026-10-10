@@ -14,3 +14,6 @@ A configuração gratuita está preparada em render.yaml. A publicação real de
 O servidor grátis pode suspender após inatividade e demorar para responder. Limites e regras de pausa do Supabase dependem do plano vigente. Faça backups regularmente usando Exportar backup. A modalidade cloud não usa SQLite; uma reinicialização Render não apaga os registros do Supabase. Não há migração automática das contas locais: crie a conta cloud e importe um backup dos lançamentos, se houver.
 
 Validação disponível: cálculos financeiros e fluxo local em navegador. A integração real com Supabase e o acesso pelo Render ainda não foram validados por falta de projeto e configuração. Publicar o ambiente Codex não publica este serviço Render.
+
+## Atualização de orçamento, dívidas e segmentos
+Não execute novamente o SQL para estes recursos: novas informações são adicionadas ao JSON financeiro da conta. O fluxo existente de RLS e controle de versão continua sendo usado. Após a nova publicação ficar Live, atualize a página. Edite dívidas antigas para informar total original e parcela mensal; sem esse cadastro, o sistema utiliza o saldo anterior como compromisso previsto. Nunca registre como despesa avulsa uma parcela já paga na área de dívidas. Opções personalizadas são salvas por conta e incluídas no backup.

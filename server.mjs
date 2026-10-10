@@ -9,7 +9,7 @@ await mkdir(new URL('./data/',import.meta.url),{recursive:true});
 const db=new DatabaseSync(new URL('./data/finance.db',import.meta.url).pathname);
 db.exec('PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY,email TEXT UNIQUE,password TEXT,salt TEXT,state TEXT); CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY,user INTEGER,expires INTEGER);');
 if(!db.prepare('PRAGMA table_info(users)').all().some(c=>c.name==='version'))db.exec('ALTER TABLE users ADD COLUMN version INTEGER NOT NULL DEFAULT 0');
-const files={'/':'index.html','/app.mjs':'app.mjs','/finance.mjs':'finance.mjs','/style.css':'style.css','/business.mjs':'business.mjs','/business-ui.mjs':'business-ui.mjs','/recurring.mjs':'recurring.mjs','/recurring-ui.mjs':'recurring-ui.mjs'};
+const files={'/':'index.html','/app.mjs':'app.mjs','/finance.mjs':'finance.mjs','/style.css':'style.css','/business.mjs':'business.mjs','/business-ui.mjs':'business-ui.mjs','/recurring.mjs':'recurring.mjs','/recurring-ui.mjs':'recurring-ui.mjs','/personal.mjs':'personal.mjs','/personal-ui.mjs':'personal-ui.mjs','/choices.mjs':'choices.mjs','/segments.mjs':'segments.mjs','/validation.mjs':'validation.mjs'};
 const attempts=new Map();
 function send(res,status,data){res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data));}
 

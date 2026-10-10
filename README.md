@@ -1,39 +1,37 @@
 # Meu Equilíbrio
-Aplicativo de finanças pessoais em português, com login e interface responsiva para notebook e celular. JavaScript nativo e SQLite, sem dependências externas.
+Aplicativo leve e responsivo de finanças pessoais e negócios, em português. JavaScript nativo, sem dependências externas.
 
 ## Executar
-Requer Node.js 22.13 ou superior (SQLite integrado). Execute `npm start` neste checkout. A porta padrão é 3000; altere com `PORT`. Execute `npm test` para testar os cálculos financeiros.
+Requer Node.js 22.13 ou superior. `npm start` usa autenticação e SQLite locais em `data/finance.db`. `npm run start:cloud` usa Supabase Auth e banco protegido por RLS; configure `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY`. Não use service_role ou uma chave secret. Porta padrão 3000, ajustável por `PORT`. Execute `npm test` para testar os cálculos e a validação.
 
-## Recursos
-- Cadastro e login com senha de 10 a 128 caracteres; senhas derivadas com scrypt, sessões HttpOnly, limitação de tentativas e validação de origem.
-- Receitas e despesas por mês, categorias, saldo e limite com meta de reserva configurável. Avisos a partir de 80% do orçamento e ao excedê-lo.
-- Dívidas com credor, saldo devedor, vencimento, observações, situação de atraso, quitação e total em aberto. A quitação não gera uma despesa automaticamente: registre o pagamento no orçamento. Parcelamento e pagamentos parciais ainda não estão implementados.
-- Backup JSON por conta. Importar substitui os dados da conta após confirmação.
-- Mesma conta e dados em vários aparelhos conectados ao mesmo servidor. Atualize a página para carregar mudanças feitas em outro aparelho. Conflitos de salvamento são rejeitados para evitar sobrescrever alterações.
+A publicação no Render segue `render.yaml` com plano Free. Veja [DEPLOY.md](DEPLOY.md). Para uso público mantenha HTTPS e `COOKIE_SECURE=1`. Mantenha backups; planos gratuitos podem suspender serviços e possuem limites.
 
-## Hospedagem
-Para uso fora deste ambiente, hospede o servidor atrás de HTTPS e defina `COOKIE_SECURE=1`. Preserve o diretório `data/` em armazenamento persistente e mantenha backups do SQLite. O aplicativo não foi publicado; não há recuperação de senha, verificação de e-mail, PWA ou modo offline nesta versão. Não envie o banco de dados para o Git.
+## Finanças pessoais
+- Receitas e despesas avulsas, categorias personalizadas e meta de reserva de 0 a 100%.
+- Receitas/despesas fixas: Tipo tem apenas Receita e Despesa. Categorias de receita incluem Salário mensal, Aposentadoria, Pensão, Aluguel de imóveis, Aluguel de equipamentos, Prestação de serviços, Mensalidades e Rendimentos financeiros. Outros permite criar e reutilizar sua preferência.
+- Fixos aparecem automaticamente todo mês, sem materializar duplicatas. Recebimento/pagamento precisa ser confirmado para entrar no saldo realizado. Dias 29–31 são ajustados em meses menores.
+- Alterações de fixos valem no mês escolhido e seguintes, substituindo mudanças futuras previamente programadas da regra. Meses anteriores e valores já confirmados ficam preservados. Pode ignorar só um mês, desfazer confirmação ou desativar a repetição.
+- Dívidas: total original, saldo restante, parcela mensal, categoria, primeiro vencimento e pagamentos parciais. Cada pagamento registrado reduz o saldo e gera uma despesa vinculada automaticamente. Desfazer remove a despesa e reabre o saldo juntos. Não lance essa mesma parcela novamente como despesa fixa ou avulsa.
+- Orçamento mensal compara previsto e realizado, incluindo somente parcelas previstas do mês, gastos e reserva. Pagamento parcial mantém no previsto somente o saldo restante da parcela, sem duplicação.
+- Visão geral mostra dinheiro total, disponível após dinheiro guardado, dívidas restantes, valor já pago e posição financeira. Configure saldo inicial e data de início: só movimentos a partir dessa data são aplicados ao saldo inicial. Dinheiro guardado é parte do saldo, não uma entrada extra.
+- Alertas de orçamento negativo, vencimentos e previsão dos próximos seis meses. A projeção assume recebimentos e contas fixas e pagamento de parcelas; não prevê novos gastos, atrasos ou juros futuros.
 
-## Validação executada
-Quatro testes de orçamento passaram. Teste de navegador em 390 e 1366 pixels validou cadastro, receitas, despesas, alerta de limite, dívida vencida, persistência após recarregar, quitação e logout. Testes HTTP validaram acesso pela mesma conta em sessões diferentes e isolamento entre contas. Não houve medição em hardware Intel Core i3 ou celular físico.
+Valores de dívida devem incorporar os encargos conhecidos; pagamentos reduzem integralmente o saldo declarado. Juros novos precisam de ajuste manual. As dívidas antigas continuam com seus dados originais: edite para informar o total original e a parcela, pois esses valores não podem ser inferidos. Dívidas antigas marcadas quitadas continuam quitadas, sem criar despesas retroativas.
 
-## Hospedagem gratuita preparada
-A modalidade `npm run start:cloud` usa Supabase Auth e banco protegido por RLS, sem SQLite no Render. Veja DEPLOY.md, render.yaml e supabase/schema.sql. Requer SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY configurados no servidor. O serviço não foi publicado; a integração real depende de um projeto Supabase. A versão local continua disponível com npm start.
+## Meu Negócio
+- Catálogo amplo de segmentos, nichos e sugestões de produtos/serviços. Outro permite cadastrar atividades e categorias fora da lista. Cada item pode usar seu próprio segmento; trocar a atividade principal não apaga itens antigos.
+- Produtos com estoque e reposições pagas; serviços sem estoque. Produtos reduzem estoque nas vendas. Custo usa média ponderada do estoque restante e o custo total de cada item é congelado na venda em centavos.
+- Serviços podem ter custo direto: esse custo é considerado pago ao confirmar a venda e é descontado uma vez do caixa e do lucro. Não registre novamente o mesmo custo como despesa operacional.
+- Vendas com múltiplos itens, nome do cliente, preços individuais, data, vencimento, recebimentos parciais e situação pendente/parcial/paga/atrasada. Use o mesmo nome para reunir as compras de um cliente.
+- Caixa, aportes, recebíveis e estoque são acumulados; lucro, recebimentos e saídas seguem o mês selecionado.
+- Lucro = vendas − custo dos itens vendidos − despesas operacionais. Venda fiada reconhece lucro na data da venda; caixa só recebe quando paga. Compras de estoque não são descontadas novamente do lucro.
+- Aportes não são receita; retiradas não alteram lucro. Ao retirar dinheiro, é possível registrar a receita correspondente na área pessoal em uma única operação, sem duplicar movimentos.
+- Alertas comparam recebimentos dos clientes e saídas do mês, incluindo estoque, custos diretos e retiradas.
 
-## Meu Negócio — cosméticos
-Na área Meu Negócio, cadastre produtos com preço de venda, custo unitário e estoque inicial. O estoque inicial e as reposições são compras pagas que saem do caixa; registre um aporte quando utilizar dinheiro próprio. Aportes, despesas operacionais e retiradas são separados das finanças pessoais.
+## Dados e limites
+Novos recursos ficam no JSON por conta já existente; não requerem novo SQL no Supabase. Backups incluem todas as áreas e opções personalizadas. Importar substitui todos os dados da conta após confirmação. Atualize a página para carregar mudanças feitas em outro aparelho; salvamentos conflitantes são rejeitados. O caixa do negócio continua separado das finanças pessoais, exceto transferências explicitamente escolhidas.
 
-Registre uma venda com nome do cliente, produtos, quantidades, preços, data e vencimento. Recebimentos podem ser parciais e não podem exceder o saldo. A venda reduz o estoque; pagamentos aumentam o caixa. Os detalhes de cada cliente exibem produtos, preços unitários, subtotais, vencimento, situação e histórico de pagamentos. Use sempre o mesmo nome para reunir o cliente.
+Ainda não há compras a prazo para estoque, múltiplos vencimentos de uma mesma venda, devoluções, edição/cancelamento de vendas, recuperação de senha, verificação de validade de produtos, PWA ou modo offline. Não envie data/, arquivos .env ou credenciais ao Git.
 
-Caixa, aportes, valores a receber e estoque a custo são acumulados; lucro, receita recebida e saídas usam o mês selecionado. Lucro = vendas do mês − custo dos produtos vendidos − despesas operacionais do mês. Custo de estoque usa média ponderada do estoque restante, com o total do custo de cada item congelado na venda e calculado em centavos. Reposição posterior não altera o lucro de vendas anteriores. O lucro de uma venda fiada é reconhecido na data da venda; sua receita de caixa só entra quando paga. Compras de estoque não são descontadas novamente do lucro. O alerta compara recebimentos de clientes com todas as saídas do mês, incluindo estoque e retiradas; aportes não são receita de vendas.
-
-Dados do negócio são armazenados no mesmo JSON por conta, protegidos pelo RLS e controle de versão existentes. Não requer novo SQL no Supabase. Backups incluem a área do negócio; importar um backup substitui todos os dados pessoais e do negócio. Ainda não há compras a prazo, parcelamento com múltiplos vencimentos, devoluções, edição/cancelamento de vendas ou controle de validade.
-
-Validação da atualização: 16 testes automatizados passaram. Fluxo de navegador em 390 e 1366 pixels validou aporte, dois produtos, venda com múltiplos itens, estoque insuficiente, recebimento parcial e quitação, pagamento excedente, reposição com custo diferente, lucro, caixa, persistência em outra sessão e preservação das finanças pessoais. A integração publicada no Render deve ser conferida após o deploy automático.
-
-## Receitas e despesas fixas
-Nas finanças pessoais, cadastre salário e contas recorrentes com valor, categoria, dia do mês e mês de início. A ocorrência aparece automaticamente a cada mês, sem gravar duplicatas. Dias 29–31 são ajustados para o último dia nos meses menores. A previsão inclui fixos e lançamentos avulsos; receitas/despesas fixas só entram nos cartões de valores reais após Confirmar recebimento/pagamento. Não registre o mesmo valor novamente como lançamento avulso.
-
-Editar altera o mês escolhido e os seguintes, substituindo alterações futuras previamente programadas dessa regra. Meses anteriores e valores já confirmados ficam preservados. Desativar interrompe a repetição a partir do mês selecionado, sem apagar o histórico. Ignorar este mês cria uma exceção sem encerrar a recorrência; Desfazer confirmação remove somente a confirmação do mês. Fixos são separados de Meu Negócio e incluídos nos backups. Não há necessidade de novo SQL.
-
-Validação desta atualização: 21 testes passaram e testes de navegador validaram criação de receita/despesa fixa, geração do mês seguinte, previsão separada do saldo real, confirmação, edição com preservação de histórico, exceção mensal, desativação, persistência e ausência de duplicatas. Os fluxos pessoais e de Meu Negócio também passaram após a mudança.
+## Validação da versão
+29 testes de cálculo e validação passaram. Testes de navegador em 390 e 1366 pixels validaram cadastro, finanças fixas, edição histórica, dívidas e despesas vinculadas, categorias personalizadas, orçamento mensal/geral, segmento/nicho, produtos, serviços, estoque, vendas, pagamentos, transferências e persistência. Testes HTTP validaram isolamento entre contas, salvamento em outra sessão, conflitos e rejeição de pagamentos excedentes. O comando cloud iniciou e serviu todos os módulos em teste local; isso não verifica o Supabase real. O acesso de verificação ao domínio Render foi bloqueado pela política de rede deste ambiente; verifique Live após o deploy automático.
