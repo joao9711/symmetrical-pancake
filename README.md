@@ -19,3 +19,14 @@ Quatro testes de orçamento passaram. Teste de navegador em 390 e 1366 pixels va
 
 ## Hospedagem gratuita preparada
 A modalidade `npm run start:cloud` usa Supabase Auth e banco protegido por RLS, sem SQLite no Render. Veja DEPLOY.md, render.yaml e supabase/schema.sql. Requer SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY configurados no servidor. O serviço não foi publicado; a integração real depende de um projeto Supabase. A versão local continua disponível com npm start.
+
+## Meu Negócio — cosméticos
+Na área Meu Negócio, cadastre produtos com preço de venda, custo unitário e estoque inicial. O estoque inicial e as reposições são compras pagas que saem do caixa; registre um aporte quando utilizar dinheiro próprio. Aportes, despesas operacionais e retiradas são separados das finanças pessoais.
+
+Registre uma venda com nome do cliente, produtos, quantidades, preços, data e vencimento. Recebimentos podem ser parciais e não podem exceder o saldo. A venda reduz o estoque; pagamentos aumentam o caixa. Os detalhes de cada cliente exibem produtos, preços unitários, subtotais, vencimento, situação e histórico de pagamentos. Use sempre o mesmo nome para reunir o cliente.
+
+Caixa, aportes, valores a receber e estoque a custo são acumulados; lucro, receita recebida e saídas usam o mês selecionado. Lucro = vendas do mês − custo dos produtos vendidos − despesas operacionais do mês. Custo de estoque usa média ponderada do estoque restante, com o total do custo de cada item congelado na venda e calculado em centavos. Reposição posterior não altera o lucro de vendas anteriores. O lucro de uma venda fiada é reconhecido na data da venda; sua receita de caixa só entra quando paga. Compras de estoque não são descontadas novamente do lucro. O alerta compara recebimentos de clientes com todas as saídas do mês, incluindo estoque e retiradas; aportes não são receita de vendas.
+
+Dados do negócio são armazenados no mesmo JSON por conta, protegidos pelo RLS e controle de versão existentes. Não requer novo SQL no Supabase. Backups incluem a área do negócio; importar um backup substitui todos os dados pessoais e do negócio. Ainda não há compras a prazo, parcelamento com múltiplos vencimentos, devoluções, edição/cancelamento de vendas ou controle de validade.
+
+Validação da atualização: 16 testes automatizados passaram. Fluxo de navegador em 390 e 1366 pixels validou aporte, dois produtos, venda com múltiplos itens, estoque insuficiente, recebimento parcial e quitação, pagamento excedente, reposição com custo diferente, lucro, caixa, persistência em outra sessão e preservação das finanças pessoais. A integração publicada no Render deve ser conferida após o deploy automático.
