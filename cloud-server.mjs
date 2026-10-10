@@ -5,7 +5,7 @@ import {valid} from './validation.mjs';
 const base=process.env.SUPABASE_URL,key=process.env.SUPABASE_PUBLISHABLE_KEY;
 if(!base||!key)throw Error('Configure SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY. Não use chave service_role.');
 if(new URL(base).protocol!=='https:')throw Error('Supabase requer HTTPS.');
-const files={'/':'index.html','/app.mjs':'app.mjs','/finance.mjs':'finance.mjs','/style.css':'style.css','/business.mjs':'business.mjs','/business-ui.mjs':'business-ui.mjs'};
+const files={'/':'index.html','/app.mjs':'app.mjs','/finance.mjs':'finance.mjs','/style.css':'style.css','/business.mjs':'business.mjs','/business-ui.mjs':'business-ui.mjs','/recurring.mjs':'recurring.mjs','/recurring-ui.mjs':'recurring-ui.mjs'};
 const empty={entries:[],debts:[],reserve:20};
 function send(res,status,data){res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data));}
 async function remote(path,method='GET',body,token){const response=await fetch(base+path,{method,headers:requestHeaders(key,token),body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(15000)});const data=await response.json().catch(()=>null);if(!response.ok){const error=Error('Serviço indisponível');error.status=response.status;error.code=data?.error_code||data?.code;throw error;}return data;}
