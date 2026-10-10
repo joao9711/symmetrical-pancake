@@ -13,8 +13,7 @@ A publicação no Render segue `render.yaml` com plano Free. Veja [DEPLOY.md](DE
 - Alterações de fixos valem no mês escolhido e seguintes, substituindo mudanças futuras previamente programadas da regra. Meses anteriores e valores já confirmados ficam preservados. Pode ignorar só um mês, desfazer confirmação ou desativar a repetição.
 - Dívidas: total original, saldo restante, parcela mensal, categoria, primeiro vencimento e pagamentos parciais. Cada pagamento registrado reduz o saldo e gera uma despesa vinculada automaticamente. Desfazer remove a despesa e reabre o saldo juntos. Não lance essa mesma parcela novamente como despesa fixa ou avulsa.
 - Orçamento mensal compara previsto e realizado, incluindo somente parcelas previstas do mês, gastos e reserva. Pagamento parcial mantém no previsto somente o saldo restante da parcela, sem duplicação.
-- Visão geral mostra dinheiro total, disponível após dinheiro guardado, dívidas restantes, valor já pago e posição financeira. Configure saldo inicial e data de início: só movimentos a partir dessa data são aplicados ao saldo inicial. Dinheiro guardado é parte do saldo, não uma entrada extra.
-- Alertas de orçamento negativo, vencimentos e previsão dos próximos seis meses. A projeção assume recebimentos e contas fixas e pagamento de parcelas; não prevê novos gastos, atrasos ou juros futuros.
+- Alerta de orçamento mensal negativo. A seção Visão geral/orçamento total, suas configurações e projeção foram removidas da tela a pedido do usuário. Dados anteriormente salvos continuam preservados nos backups.
 
 Valores de dívida devem incorporar os encargos conhecidos; pagamentos reduzem integralmente o saldo declarado. Juros novos precisam de ajuste manual. As dívidas antigas continuam com seus dados originais: edite para informar o total original e a parcela, pois esses valores não podem ser inferidos. Dívidas antigas marcadas quitadas continuam quitadas, sem criar despesas retroativas.
 
