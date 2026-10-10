@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: meu-equilibrio
+    runtime: node
+    plan: free
+    buildCommand: npm test
+    startCommand: npm run start:cloud
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 24.19.0
+      - key: COOKIE_SECURE
+        value: '1'
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false

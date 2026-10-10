@@ -1,0 +1,14 @@
+{
+  "name": "meu-equilibrio",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test",
+    "start:cloud": "node cloud-server.mjs"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}
