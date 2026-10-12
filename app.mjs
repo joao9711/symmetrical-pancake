@@ -1,3 +1,4 @@
+import {initConfirmation} from './confirmation-ui.mjs';
 import {initCalculator} from './calculator.mjs';
 import {setFeedback} from './feedback.mjs';
 import {initLayout} from './layout.mjs';
@@ -64,4 +65,6 @@ personalUI=initPersonal({getState:()=>state,save:persist,getMonth:()=>$('month')
 render();
 window.addEventListener('pageshow',async event=>{if(event.persisted){forgetVisit();document.querySelector('main').hidden=true;try{showAccount(await api('me'));}catch{$('auth').hidden=false;}}});
 const recoveryUI=initPasswordRecovery({api});
-if(!await recoveryUI.start()){try{showAccount(await api('me'));}catch{}}
+const confirmationUI=initConfirmation({api});
+window.addEventListener('hashchange',()=>confirmationUI.start());
+if(!await confirmationUI.start()&&!await recoveryUI.start()){try{showAccount(await api('me'));}catch{}}

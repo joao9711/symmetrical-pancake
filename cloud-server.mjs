@@ -1,3 +1,4 @@
+import {createConfirmation,confirmationFailure} from './confirmation.mjs';
 import {normalizeProfile,publicProfile} from './profile.mjs';
 import {validVisit,allowVisit,sessionCookies,clearSessionCookies} from './login-session.mjs';
 import {createRecovery,recoveryFailure,validEmail,validPassword} from './recovery.mjs';
@@ -8,10 +9,11 @@ import {valid} from './validation.mjs';
 const base=process.env.SUPABASE_URL,key=process.env.SUPABASE_PUBLISHABLE_KEY;
 if(!base||!key)throw Error('Configure SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY. Não use chave service_role.');
 if(new URL(base).protocol!=='https:')throw Error('Supabase requer HTTPS.');
-const files={'/manifest.webmanifest':'manifest.webmanifest','/assets/favicon.ico':'assets/favicon.ico','/assets/icon-180.png':'assets/icon-180.png','/assets/icon-192.png':'assets/icon-192.png','/assets/icon-512.png':'assets/icon-512.png','/':'index.html','/calculator.mjs':'calculator.mjs','/profile.mjs':'profile.mjs','/app.mjs':'app.mjs','/feedback.mjs':'feedback.mjs','/layout.mjs':'layout.mjs','/password-ui.mjs':'password-ui.mjs','/finance.mjs':'finance.mjs','/style.css':'style.css','/business.mjs':'business.mjs','/cosmetics.mjs':'cosmetics.mjs','/business-workspaces.mjs':'business-workspaces.mjs','/business-ui.mjs':'business-ui.mjs','/recurring.mjs':'recurring.mjs','/recurring-ui.mjs':'recurring-ui.mjs','/personal.mjs':'personal.mjs','/personal-ui.mjs':'personal-ui.mjs','/choices.mjs':'choices.mjs','/segments.mjs':'segments.mjs','/validation.mjs':'validation.mjs'};
+const files={'/manifest.webmanifest':'manifest.webmanifest','/assets/favicon.ico':'assets/favicon.ico','/assets/icon-180.png':'assets/icon-180.png','/assets/icon-192.png':'assets/icon-192.png','/assets/icon-512.png':'assets/icon-512.png','/':'index.html','/confirmation-ui.mjs':'confirmation-ui.mjs','/calculator.mjs':'calculator.mjs','/profile.mjs':'profile.mjs','/app.mjs':'app.mjs','/feedback.mjs':'feedback.mjs','/layout.mjs':'layout.mjs','/password-ui.mjs':'password-ui.mjs','/finance.mjs':'finance.mjs','/style.css':'style.css','/business.mjs':'business.mjs','/cosmetics.mjs':'cosmetics.mjs','/business-workspaces.mjs':'business-workspaces.mjs','/business-ui.mjs':'business-ui.mjs','/recurring.mjs':'recurring.mjs','/recurring-ui.mjs':'recurring-ui.mjs','/personal.mjs':'personal.mjs','/personal-ui.mjs':'personal-ui.mjs','/choices.mjs':'choices.mjs','/segments.mjs':'segments.mjs','/validation.mjs':'validation.mjs'};
 const empty={entries:[],debts:[],reserve:20};
 function send(res,status,data){res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data));}
 async function remote(path,method='GET',body,token){const response=await fetch(base+path,{method,headers:requestHeaders(key,token),body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(15000)});const data=await response.json().catch(()=>null);if(!response.ok){const error=Error('Serviço indisponível');error.status=response.status;error.code=data?.error_code||data?.code;throw error;}return data;}
+const confirmation=createConfirmation(remote,process.env.PUBLIC_APP_URL||'https://meu-equilibrio.onrender.com');
 const recovery=createRecovery(remote,process.env.PUBLIC_APP_URL||'https://meu-equilibrio.onrender.com');
 function cookies(res,value,remember,visit){res.setHeader('Set-Cookie',sessionCookies(value,remember,visit,process.env.COOKIE_SECURE!=='0'));}
 function readCookies(req){return Object.fromEntries((req.headers.cookie||'').split(';').map(v=>v.trim().split('=')));}
@@ -23,6 +25,16 @@ http.createServer(async(req,res)=>{try{
  if(path.startsWith('/api/')){
   if(req.headers.origin&&new URL(req.headers.origin).host!==req.headers.host)return send(res,403,{error:'Origem inválida.'});
   let body={};if(['POST','PUT'].includes(req.method)){if(!req.headers['content-type']?.startsWith('application/json'))return send(res,415,{error:'Formato inválido.'});let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>5000000)return send(res,413,{error:'Dados muito grandes.'});}try{body=JSON.parse(raw);}catch{return send(res,400,{error:'Dados inválidos.'});}}
+  if(path==='/api/resend-confirmation'&&req.method==='POST'){
+   const email=typeof body.email==='string'?body.email.trim().toLowerCase():'';
+   if(!validEmail(email))return send(res,400,{error:'Informe o e-mail da sua conta.'});
+   try{return send(res,200,await confirmation.resend(email));}catch(error){const failure=confirmationFailure(error);return send(res,failure.status,{error:failure.message});}
+  }
+  if(path==='/api/confirm-email'&&req.method==='POST'){
+   const tokenHash=body.tokenHash,accessToken=body.accessToken;
+   if(!(typeof tokenHash==='string'&&tokenHash.length>=10&&tokenHash.length<=1024)&&!(typeof accessToken==='string'&&accessToken.length>0&&accessToken.length<=8192))return send(res,400,{error:'Link de confirmação inválido. Solicite um novo.'});
+   try{return send(res,200,await confirmation.verify({tokenHash:typeof tokenHash==='string'&&tokenHash.length>=10&&tokenHash.length<=1024?tokenHash:undefined,accessToken}));}catch(error){const failure=confirmationFailure(error);return send(res,failure.status,{error:failure.message});}
+  }
   if(path==='/api/forgot-password'&&req.method==='POST'){
    const email=typeof body.email==='string'?body.email.trim().toLowerCase():'';
    if(!validEmail(email))return send(res,400,{error:'Informe o e-mail da sua conta.'});
@@ -41,7 +53,7 @@ http.createServer(async(req,res)=>{try{
    if(body.remember!==true&&!validVisit(body.visit))return send(res,400,{error:'Atualize a página e tente entrar novamente.'});
    const email=typeof body.email==='string'?body.email.trim().toLowerCase():'';if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||typeof body.password!=='string'||body.password.length<10||body.password.length>128)return send(res,400,{error:'Use um e-mail válido e uma senha de 10 a 128 caracteres.'});
    const profile=path==='/api/register'?normalizeProfile(body.profile):null;if(path==='/api/register'&&!profile)return send(res,400,{error:'Informe nome completo e celular com DDD ou código do país.'});
-   let result;try{result=await remote(path==='/api/register'?'/auth/v1/signup':'/auth/v1/token?grant_type=password','POST',{email,password:body.password,...(profile?{data:profile}:{})});}catch(error){const failure=authFailure(error);return send(res,failure.status,{error:failure.message});}
+   let result;try{result=await remote(path==='/api/register'?confirmation.signupPath:'/auth/v1/token?grant_type=password','POST',{email,password:body.password,...(profile?{data:profile}:{})});}catch(error){const failure=authFailure(error);return send(res,failure.status,{error:failure.message});}
    if(!result.access_token)return send(res,200,{confirmationRequired:true});cookies(res,result,body.remember===true,body.visit);return send(res,200,await account(result.user,result.access_token));
   }
   let auth;try{auth=await session(req,res);}catch(error){return send(res,[400,401,403].includes(error.status)?401:503,{error:[400,401,403].includes(error.status)?'Entre na sua conta.':'Não foi possível conectar. Tente novamente.'});}
