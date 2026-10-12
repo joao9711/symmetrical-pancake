@@ -18,7 +18,7 @@ A publicação no Render segue `render.yaml` com plano Free. Veja [DEPLOY.md](DE
 Valores de dívida devem incorporar os encargos conhecidos; pagamentos reduzem integralmente o saldo declarado. Juros novos precisam de ajuste manual. As dívidas antigas continuam com seus dados originais: edite para informar o total original e a parcela, pois esses valores não podem ser inferidos. Dívidas antigas marcadas quitadas continuam quitadas, sem criar despesas retroativas.
 
 ## Meu Negócio
-- Catálogo amplo de segmentos, nichos e sugestões de produtos/serviços. Outro permite cadastrar atividades e categorias fora da lista. Cada item pode usar seu próprio segmento; trocar a atividade principal não apaga itens antigos.
+- Catálogo amplo de segmentos, nichos e sugestões de produtos/serviços. Outro permite cadastrar atividades e categorias fora da lista. Você pode cadastrar vários segmentos. Cada espaço mantém seus próprios produtos, estoque, vendas, clientes, pagamentos e caixa. Trocar de segmento não mistura os registros.
 - Produtos com estoque e reposições pagas; serviços sem estoque. Produtos reduzem estoque nas vendas. Custo usa média ponderada do estoque restante e o custo total de cada item é congelado na venda em centavos.
 - Serviços podem ter custo direto: esse custo é considerado pago ao confirmar a venda e é descontado uma vez do caixa e do lucro. Não registre novamente o mesmo custo como despesa operacional.
 - Vendas com múltiplos itens, nome do cliente, preços individuais, data, vencimento, recebimentos parciais e situação pendente/parcial/paga/atrasada. Use o mesmo nome para reunir as compras de um cliente.
@@ -51,8 +51,17 @@ A opção Salvar senha fica desmarcada por padrão. Ela mantém a sessão no apa
 SQLite local adiciona colunas de sessão de forma automática, sem modificar dados financeiros. Não requer novo SQL no Supabase. Validação: 40 testes passaram; navegador validou comportamento temporário e persistente, e servidor cloud com Supabase simulado validou renovação e limpeza de cookies.
 
 ## Navegação e organização
-O site agora apresenta uma tela por vez. Finanças pessoais tem Resumo do mês, Lançamentos, Contas fixas, Dívidas e Orçamento. Meu Negócio tem Resumo do negócio, Vendas e clientes, Produtos e serviços, Caixa e Meu segmento. Conta e backup reúne exportação/importação e dados do acesso. No notebook a navegação fica na lateral; no celular todas as opções aparecem em um menu compacto.
+O site agora apresenta uma tela por vez. Finanças pessoais tem Resumo do mês, Lançamentos, Contas fixas, Dívidas e Orçamento. Meu Negócio tem Resumo do negócio, Vendas e clientes, Produtos e serviços, Caixa e Meus segmentos. Conta e backup reúne exportação/importação e dados do acesso. No notebook a navegação fica na lateral; no celular todas as opções aparecem em um menu compacto.
 
 Resumo mostra indicadores e atalhos, sem todos os cadastros na mesma página. Formulários ficam recolhidos até o usuário abrir e voltam a se recolher após salvar. Edições e atalhos abrem o formulário correto. Há busca em lançamentos, fixos, dívidas, produtos/serviços e clientes. Feedback de salvamento fica disponível em qualquer tela, com confirmação temporária. A organização só move componentes da interface; não altera registros nem cálculos. A seção de orçamento total removida anteriormente continua ausente.
 
 Validação: 40 testes de cálculo/autenticação passaram; teste de navegador exercitou todas as telas e atalhos, formulários, buscas, pagamentos e os fluxos de negócio em notebook e celular.
+
+## Vários segmentos de negócio
+Em Meu Negócio > Meus segmentos, cadastre até 50 espaços com nome, segmento e nicho. O seletor Segmento ativo escolhe qual espaço aparece nas telas de resumo, produtos, vendas e caixa. Cadastros de produtos usam o segmento/nicho do espaço ativo; categorias continuam personalizáveis. Nomes são únicos para evitar confusão. Há edição do nome/classificação e exclusão somente de espaços sem registros.
+
+Resumo de todos os segmentos é um consolidado explicitamente separado dos números individuais. Retiradas com transferência pessoal de todos os segmentos entram uma única vez na área pessoal, mesmo quando outro segmento está selecionado. Troca de segmento pede confirmação se houver formulário ou venda não salva; uma falha de salvamento restaura o seletor anterior.
+
+Dados antigos de Meu Negócio são mantidos integralmente em um espaço anterior, com seu perfil existente quando disponível. A migração ocorre no primeiro salvamento de segmento e não tenta dividir automaticamente registros mistos antigos: não há informação confiável para repartir caixa e vendas entre atividades. Novos segmentos começam vazios e separados. Tudo é armazenado no JSON por conta, incluído nos backups e protegido pelo controle de versão existente; não requer novo SQL no Supabase. Backups antigos seguem aceitos.
+
+Validação: 46 testes passaram. Navegador validou dois segmentos com produtos/clientes/vendas/caixas separados, consolidado, transferências pessoais de ambos, persistência, migração dos registros anteriores, falha de troca, cancelamento de troca com rascunho e telas notebook/celular.
