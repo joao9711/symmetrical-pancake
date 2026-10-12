@@ -9,7 +9,7 @@ await mkdir(new URL('./data/',import.meta.url),{recursive:true});
 const db=new DatabaseSync(new URL('./data/finance.db',import.meta.url).pathname);
 db.exec('PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY,email TEXT UNIQUE,password TEXT,salt TEXT,state TEXT); CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY,user INTEGER,expires INTEGER);');
 if(!db.prepare('PRAGMA table_info(users)').all().some(c=>c.name==='version'))db.exec('ALTER TABLE users ADD COLUMN version INTEGER NOT NULL DEFAULT 0');
-const files={'/':'index.html','/app.mjs':'app.mjs','/password-ui.mjs':'password-ui.mjs','/finance.mjs':'finance.mjs','/style.css':'style.css','/business.mjs':'business.mjs','/business-ui.mjs':'business-ui.mjs','/recurring.mjs':'recurring.mjs','/recurring-ui.mjs':'recurring-ui.mjs','/personal.mjs':'personal.mjs','/personal-ui.mjs':'personal-ui.mjs','/choices.mjs':'choices.mjs','/segments.mjs':'segments.mjs','/validation.mjs':'validation.mjs'};
+const files={'/manifest.webmanifest':'manifest.webmanifest','/assets/favicon.ico':'assets/favicon.ico','/assets/icon-180.png':'assets/icon-180.png','/assets/icon-192.png':'assets/icon-192.png','/assets/icon-512.png':'assets/icon-512.png','/':'index.html','/app.mjs':'app.mjs','/password-ui.mjs':'password-ui.mjs','/finance.mjs':'finance.mjs','/style.css':'style.css','/business.mjs':'business.mjs','/business-ui.mjs':'business-ui.mjs','/recurring.mjs':'recurring.mjs','/recurring-ui.mjs':'recurring-ui.mjs','/personal.mjs':'personal.mjs','/personal-ui.mjs':'personal-ui.mjs','/choices.mjs':'choices.mjs','/segments.mjs':'segments.mjs','/validation.mjs':'validation.mjs'};
 const attempts=new Map();
 function send(res,status,data){res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data));}
 
@@ -34,6 +34,6 @@ http.createServer(async(req,res)=>{try{
   return send(res,404,{error:'Não encontrado'});
  }
  const file=files[path];if(!file||!['GET','HEAD'].includes(req.method)){res.writeHead(404);res.end();return;}
- const body=await readFile(new URL(file,import.meta.url));res.writeHead(200,{'Content-Type':file.endsWith('.html')?'text/html; charset=utf-8':file.endsWith('.css')?'text/css':'text/javascript','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; frame-ancestors 'none'; base-uri 'none'",'Cache-Control':'no-cache'});res.end(req.method==='HEAD'?undefined:body);
+ const body=await readFile(new URL(file,import.meta.url));res.writeHead(200,{'Content-Type':file.endsWith('.png')?'image/png':file.endsWith('.ico')?'image/x-icon':file.endsWith('.webmanifest')?'application/manifest+json':file.endsWith('.html')?'text/html; charset=utf-8':file.endsWith('.css')?'text/css':'text/javascript','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; frame-ancestors 'none'; base-uri 'none'",'Cache-Control':'no-cache'});res.end(req.method==='HEAD'?undefined:body);
  }catch{send(res,500,{error:'Não foi possível concluir. Tente novamente.'});}
 }).listen(Number(process.env.PORT||3000),'0.0.0.0',()=>console.log('Aplicativo iniciado na porta '+(process.env.PORT||3000)));

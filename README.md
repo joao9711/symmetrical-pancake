@@ -41,3 +41,6 @@ Na versão publicada, Esqueci minha senha envia um link pelo Supabase. O usuári
 O retorno usa a raiz HTTPS de PUBLIC_APP_URL, cujo padrão é https://meu-equilibrio.onrender.com. No Supabase, mantenha Site URL e redirecionamentos compatíveis com esse endereço e o template de recuperação padrão. Limites de e-mail do plano Supabase continuam aplicáveis. O modo SQLite local não envia e-mail e apresenta uma mensagem explicativa.
 
 Validação: 37 testes passaram; teste de navegador com Supabase simulado exercitou envio, limite de solicitações, callbacks, senhas diferentes, sucesso e link inválido. A entrega real de e-mails não foi validada neste ambiente.
+
+## Identidade visual e ícone
+Logo própria aplicada no cabeçalho e no login. Favicon ICO, ícone Apple de 180px e ícones de 192/512px registrados no manifesto para atalhos e instalação pelo navegador. Assets são locais e não dependem de CDN. O manifesto usa modo standalone quando instalado por um navegador compatível; não implementa funcionamento offline. Para atualizar atalhos antigos que usam o ícone genérico, remova apenas o atalho e adicione novamente após a publicação (não limpe os dados da conta). O comportamento e os emblemas de atalhos dependem do navegador/Android. Arte original preservada em assets/logo-original.png; arquivos menores usados em execução.
