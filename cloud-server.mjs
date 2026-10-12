@@ -2,7 +2,7 @@ import {createConfirmation,confirmationFailure} from './confirmation.mjs';
 import {normalizeProfile,publicProfile} from './profile.mjs';
 import {validVisit,allowVisit,sessionCookies,clearSessionCookies} from './login-session.mjs';
 import {createRecovery,recoveryFailure,validEmail,validPassword} from './recovery.mjs';
-import {requestHeaders,authFailure} from './supabase-client.mjs';
+import {requestHeaders,authFailure,validAuthPassword} from './supabase-client.mjs';
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {valid} from './validation.mjs';
@@ -28,7 +28,7 @@ http.createServer(async(req,res)=>{try{
   if(path==='/api/resend-confirmation'&&req.method==='POST'){
    const email=typeof body.email==='string'?body.email.trim().toLowerCase():'';
    if(!validEmail(email))return send(res,400,{error:'Informe o e-mail da sua conta.'});
-   try{return send(res,200,await confirmation.resend(email));}catch(error){const failure=confirmationFailure(error);return send(res,failure.status,{error:failure.message});}
+   try{return send(res,200,await confirmation.resend(email));}catch(error){const failure=confirmationFailure(error,'resend');return send(res,failure.status,{error:failure.message});}
   }
   if(path==='/api/confirm-email'&&req.method==='POST'){
    const tokenHash=body.tokenHash,accessToken=body.accessToken;
@@ -38,7 +38,7 @@ http.createServer(async(req,res)=>{try{
   if(path==='/api/forgot-password'&&req.method==='POST'){
    const email=typeof body.email==='string'?body.email.trim().toLowerCase():'';
    if(!validEmail(email))return send(res,400,{error:'Informe o e-mail da sua conta.'});
-   try{return send(res,200,await recovery.request(email));}catch(error){const failure=recoveryFailure(error);return send(res,failure.status,{error:failure.message});}
+   try{return send(res,200,await recovery.request(email));}catch(error){const failure=recoveryFailure(error,'request');return send(res,failure.status,{error:failure.message});}
   }
   if(path==='/api/verify-recovery'&&req.method==='POST'){
    if(typeof body.tokenHash!=='string'||body.tokenHash.length<10||body.tokenHash.length>1024)return send(res,400,{error:'Link de recuperação inválido.'});
@@ -51,7 +51,7 @@ http.createServer(async(req,res)=>{try{
   }
   if(['/api/login','/api/register'].includes(path)&&req.method==='POST'){
    if(body.remember!==true&&!validVisit(body.visit))return send(res,400,{error:'Atualize a página e tente entrar novamente.'});
-   const email=typeof body.email==='string'?body.email.trim().toLowerCase():'';if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||typeof body.password!=='string'||body.password.length<10||body.password.length>128)return send(res,400,{error:'Use um e-mail válido e uma senha de 10 a 128 caracteres.'});
+   const email=typeof body.email==='string'?body.email.trim().toLowerCase():'';if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||!validAuthPassword(body.password,path==='/api/register'))return send(res,400,{error:'Use um e-mail válido e uma senha de 10 a 128 caracteres.'});
    const profile=path==='/api/register'?normalizeProfile(body.profile):null;if(path==='/api/register'&&!profile)return send(res,400,{error:'Informe nome completo e celular com DDD ou código do país.'});
    let result;try{result=await remote(path==='/api/register'?confirmation.signupPath:'/auth/v1/token?grant_type=password','POST',{email,password:body.password,...(profile?{data:profile}:{})});}catch(error){const failure=authFailure(error);return send(res,failure.status,{error:failure.message});}
    if(!result.access_token)return send(res,200,{confirmationRequired:true});cookies(res,result,body.remember===true,body.visit);return send(res,200,await account(result.user,result.access_token));

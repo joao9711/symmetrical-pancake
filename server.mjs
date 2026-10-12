@@ -1,3 +1,4 @@
+import {validAuthPassword} from './supabase-client.mjs';
 import {normalizeProfile,publicProfile} from './profile.mjs';
 import {validVisit} from './login-session.mjs';
 import {valid} from './validation.mjs';
@@ -26,7 +27,7 @@ http.createServer(async(req,res)=>{try{
   if(['/api/login','/api/register'].includes(path)&&req.method==='POST'){
    if(body.remember!==true&&!validVisit(body.visit))return send(res,400,{error:'Atualize a página e tente entrar novamente.'});
    const ip=req.socket.remoteAddress,now=Date.now();let limit=attempts.get(ip);if(!limit||limit.until<now){limit={count:0,until:now+600000};attempts.set(ip,limit);}if(++limit.count>20)return send(res,429,{error:'Muitas tentativas. Aguarde 10 minutos.'});
-   const email=typeof body.email==='string'?body.email.trim().toLowerCase():'';const password=body.password;if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||typeof password!=='string'||password.length<10||password.length>128)return send(res,400,{error:'Use um e-mail válido e uma senha de 10 a 128 caracteres.'});
+   const email=typeof body.email==='string'?body.email.trim().toLowerCase():'';const password=body.password;if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||!validAuthPassword(password,path==='/api/register'))return send(res,400,{error:'Use um e-mail válido e uma senha de 10 a 128 caracteres.'});
    let user=db.prepare('SELECT * FROM users WHERE email=?').get(email);
    if(path==='/api/register'){const profile=normalizeProfile(body.profile);if(!profile)return send(res,400,{error:'Informe nome completo e celular com DDD ou código do país.'});if(user)return send(res,409,{error:'Não foi possível cadastrar esse e-mail. Tente entrar.'});const salt=randomBytes(16).toString('hex'),hash=(await scrypt(password,salt,64)).toString('hex');try{db.prepare('INSERT INTO users(email,password,salt,state,profile) VALUES(?,?,?,?,?)').run(email,hash,salt,JSON.stringify({entries:[],debts:[],reserve:20}),JSON.stringify(profile));}catch{return send(res,409,{error:'Não foi possível cadastrar esse e-mail.'});}user=db.prepare('SELECT * FROM users WHERE email=?').get(email);}
    else{const hash=await scrypt(password,user?.salt||'invalid-user-salt',64);if(!user||!timingSafeEqual(hash,Buffer.from(user.password,'hex')))return send(res,401,{error:'E-mail ou senha incorretos.'});}

@@ -14,3 +14,7 @@ test('confirmação por hash ou token valida o usuário e não altera senha ou e
 test('links não confirmados ou expirados geram orientação específica',async()=>{
  const api=createConfirmation(async()=>({}),'https://example.com');await assert.rejects(api.verify({accessToken:'bad'}));assert.match(confirmationFailure({status:403}).message,/Reenviar confirmação/);assert.equal(confirmationFailure({status:429}).status,429);
 });
+test('erro de envio não é apresentado como link expirado',()=>{
+ assert.doesNotMatch(confirmationFailure({status:403},'resend').message,/expirou/);
+ assert.match(confirmationFailure({status:403},'resend').message,/serviço de envio/);
+});

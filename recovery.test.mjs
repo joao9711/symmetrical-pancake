@@ -7,3 +7,7 @@ test('senha nova só é enviada após token validado e não modifica registros f
 test('token inválido interrompe antes de alterar senha',async()=>{let calls=0;const r=createRecovery(async()=>{calls++;const e=Error();e.status=401;throw e;},'https://example.com');await assert.rejects(r.reset('invalid','new-password'));assert.equal(calls,1);});
 test('token hash é verificado como recuperação',async()=>{const calls=[];const r=createRecovery(async(...args)=>{calls.push(args);return {access_token:'verified-token'};},'https://example.com');assert.deepEqual(await r.verify('recovery-hash'),{accessToken:'verified-token'});assert.deepEqual(calls[0][2],{token_hash:'recovery-hash',type:'recovery'});});
 test('erros de validade, senha e limite são claros sem expor tokens',()=>{assert.match(recoveryFailure({status:401}).message,/expirou/);assert.equal(recoveryFailure({status:429}).status,429);assert.match(recoveryFailure({code:'same_password'}).message,/diferente/);assert.ok(validEmail('user@example.com'));assert.equal(validEmail('invalid'),false);assert.equal(validPassword('short'),false);assert.ok(validPassword('long-password'));});
+test('falha ao solicitar e-mail orienta sobre o envio sem culpar o link',()=>{
+ assert.doesNotMatch(recoveryFailure({status:400},'request').message,/expirou/);
+ assert.match(recoveryFailure({status:400},'request').message,/enviar o e-mail/);
+});
