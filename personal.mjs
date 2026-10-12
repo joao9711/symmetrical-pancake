@@ -1,4 +1,4 @@
-import {businessWorkspaces} from './business-workspaces.mjs';
+import {businessWorkspaces,withWorkspaces} from './business-workspaces.mjs';
 export function transferEntries(state,month){return businessWorkspaces(state).flatMap(g=>g.cash.filter(c=>c.type==='withdrawal'&&c.transferPersonal&&(!month||c.date.startsWith(month))).map(c=>({id:'business-transfer:'+g.id+':'+c.id,transfer:true,type:'income',description:'Retirada do negócio: '+c.description,cents:c.cents,date:c.date,category:'Retirada do negócio · '+g.name})));}
 export const debtPayments=s=>s.debtPayments||[];
 export function debtBalance(debt,state,beforeDate){if(debt.paid)return 0;return debt.cents-debtPayments(state).filter(p=>p.debtId===debt.id&&(!beforeDate||p.date<beforeDate)).reduce((n,p)=>n+p.cents,0);}
@@ -14,3 +14,11 @@ export function reservePercent(state){return state.personalSettings?.reservePerc
 export function generalMovements(state){const confirmed=(state.fixedRecords||[]).filter(r=>r.status==='confirmed').map(r=>({...r.entry,source:'Receita/despesa fixa confirmada'}));return [...state.entries.map(e=>({...e,source:'Lançamento avulso'})),...confirmed,...debtEntries(state).map(e=>({...e,source:'Pagamento de dívida'})),...transferEntries(state).map(e=>({...e,source:'Retirada do negócio'}))];}
 export function defaultOpeningDate(state,today){const dates=generalMovements(state).map(e=>e.date).filter(d=>d<=today).sort();return dates[0]||today;}
 export function generalSummary(state){const settings=state.personalSettings||{openingCents:0,openingDate:'0001-01-01',savedCents:0};const actual=generalMovements(state).filter(e=>e.date>=settings.openingDate);const net=actual.reduce((n,e)=>n+(e.type==='income'?e.cents:-e.cents),0);const totalDebt=(state.debts||[]).reduce((n,d)=>n+(d.totalCents??d.cents),0),remaining=(state.debts||[]).reduce((n,d)=>n+debtBalance(d,state),0);return {totalCash:settings.openingCents+net,available:settings.openingCents+net-(settings.savedCents||0),saved:settings.savedCents||0,debt:remaining,totalDebt,paidDebt:totalDebt-remaining,net:settings.openingCents+net-remaining};}
+
+export function deleteDebt(state,id){if(!(state.debts||[]).some(d=>d.id===id))throw Error('Esta dívida não existe mais.');return {...state,debts:state.debts.filter(d=>d.id!==id),debtPayments:debtPayments(state).filter(p=>p.debtId!==id)};}
+export function deletePersonalEntry(state,entry){
+ if(entry.fixed)return {...state,fixedRecords:(state.fixedRecords||[]).filter(r=>!(r.ruleId===entry.ruleId&&r.month===entry.id.slice(-7)))};
+ if(entry.debtPayment)return {...state,debtPayments:debtPayments(state).filter(p=>'debt-payment:'+p.id!==entry.id)};
+ if(entry.transfer){const groups=businessWorkspaces(state).map(g=>({...g,cash:g.cash.filter(c=>'business-transfer:'+g.id+':'+c.id!==entry.id)}));return withWorkspaces(state,groups,state.activeBusinessId||groups[0]?.id||null);}
+ return {...state,entries:state.entries.filter(e=>e.id!==entry.id)};
+}

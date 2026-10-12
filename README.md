@@ -84,3 +84,12 @@ O botão do perfil na navegação mostra os dois primeiros nomes do titular e ab
 
 ### Calculadora no perfil
 A tela Meu perfil inclui uma calculadora com soma, subtração, multiplicação, divisão, vírgula decimal, porcentagem, troca de sinal, apagar dígito e limpar. Funciona pelos botões ou pelo teclado quando a calculadora está em foco, sem alterar lançamentos ou guardar o histórico. Operações encadeadas seguem a ordem de entrada, como em uma calculadora básica; 200 + 10 % = 220 e 200 − 10 % = 180. Divisão por zero exibe erro e permite começar uma nova conta. Os valores são transitórios e são limpos ao entrar ou sair da conta.
+
+### Exclusão de cadastros e vínculos
+Os botões de exclusão exigem confirmação e não removem nada ao abrir a tela. Excluir segmento apaga todos os produtos, compras, vendas, pagamentos e movimentos de caixa somente desse segmento; retiradas transferidas deixam de compor as finanças pessoais. Outro segmento passa a ser ativo quando necessário, e excluir o último deixa a lista vazia.
+
+Excluir produto ou serviço apaga compras, estoque, vendas que contêm esse item e pagamentos dessas vendas. Se uma venda contiver outros produtos, a confirmação destaca que a venda inteira será excluída e o estoque dos demais itens será recomposto; não se distribuem pagamentos arbitrariamente entre itens. Cadastros e movimentos sem vínculo permanecem.
+
+Nas finanças pessoais, excluir dívida apaga pagamentos e despesas derivadas; excluir conta fixa apaga todas as versões, confirmações e exceções mensais. Excluir um lançamento confirmado de conta fixa desfaz apenas sua confirmação mensal; excluir um pagamento de dívida devolve o valor ao saldo pendente; excluir uma retirada transferida apaga também a movimentação correspondente no negócio. Excluir lançamento avulso remove apenas o registro selecionado. A confirmação informa cada efeito e os totais são recalculados.
+
+A exclusão altera registros, não quita obrigações nem movimenta dinheiro real. Não há desfazer na interface; exporte backup antes se precisar. Backups exportados anteriormente continuam sendo arquivos independentes. Falhas de salvamento preservam o estado visível, e a verificação de versão evita sobrepor alterações de outro aparelho.

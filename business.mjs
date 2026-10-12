@@ -23,3 +23,6 @@ function checkBusiness(b){if(!b||!['products','purchases','sales','payments','ca
 }
 
 export function validBusiness(b){try{return checkBusiness(b);}catch{return false;}}
+
+export function productDeletionDetails(b,productId){if(!b.products.some(p=>p.id===productId))throw Error('Este produto não existe mais. Atualize a página.');const sales=b.sales.filter(s=>s.items.some(i=>i.productId===productId));const ids=new Set(sales.map(s=>s.id));return {sales,purchases:b.purchases.filter(p=>p.productId===productId),payments:b.payments.filter(p=>ids.has(p.saleId)),mixedSales:sales.filter(s=>s.items.some(i=>i.productId!==productId))};}
+export function deleteProduct(b,productId){const details=productDeletionDetails(b,productId);const ids=new Set(details.sales.map(s=>s.id));const next={...b,products:b.products.filter(p=>p.id!==productId),purchases:b.purchases.filter(p=>p.productId!==productId),sales:b.sales.filter(s=>!ids.has(s.id)),payments:b.payments.filter(p=>!ids.has(p.saleId))};if(!validBusiness(next))throw Error('Não foi possível excluir sem inconsistência. Confira os registros.');return next;}
