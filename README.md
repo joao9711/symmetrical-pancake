@@ -100,3 +100,10 @@ Movimentações de caixa podem ser vinculadas a um produto/serviço do segmento 
 
 ### Organização do negócio
 Catálogo e estoque reúne os produtos com um painel Informações vinculadas para consultar compras, vendas e movimentações associadas. Gerenciar cadastro agrupa edição e exclusão; Repor estoque permanece visível. O caixa distingue movimentações manuais e compras de estoque, mostra a quem pertence cada aporte/despesa/retirada e agrupa a alteração de vínculo e exclusão em Gerenciar movimentação. A reorganização é visual; os registros e cálculos existentes são preservados.
+
+### Fragrâncias e volumes no mesmo produto
+Em Catálogo e estoque, abra Fragrâncias e volumes dentro do produto para cadastrar combinações como Oud · 100 ml, Oud · 50 ml e Floral · 100 ml. Cada variação tem seu preço de venda, estoque e custo médio independentes; a quantidade representa frascos, enquanto ml descreve o volume de cada frasco. É possível editar nome, volume e preço sem alterar os nomes, preços e custos registrados nas vendas anteriores. A mesma combinação não pode ser repetida; variações não se aplicam a serviços.
+
+Em Repor estoque e Nova venda, escolha primeiro o produto e depois a fragrância e volume. Uma venda pode conter várias combinações do mesmo produto. O servidor valida as referências e impede consumir estoque de outra variação. Totais do produto somam todas as combinações, mas o custo de cada venda é calculado apenas com o estoque da combinação escolhida.
+
+Compras e vendas antigas sem variação permanecem separadas como Sem variação — registros anteriores. Elas não são distribuídas automaticamente nem duplicadas ao cadastrar variações. Ao editar um produto com variações, registre compras pelo formulário Repor estoque para selecionar a combinação correta. Excluir o produto remove também todas as variações e seus registros vinculados. Os vínculos de aportes/despesas permanecem no nível do produto.
