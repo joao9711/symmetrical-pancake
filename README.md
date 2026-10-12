@@ -74,3 +74,8 @@ Repor estoque lista os produtos já cadastrados. Cada compra registra quantidade
 A lista mostra quantidade disponível, vendidos, total comprado, preço de venda por unidade, custo médio por unidade e custo médio total do estoque. Editar cadastro permite atualizar marca, descrição, categoria e preço sem modificar estoque ou custos das compras já registradas. Não é possível converter produto/serviço quando há compras ou vendas; preços e descrições já registrados em vendas permanecem nas respectivas vendas. Registros antigos são preservados, com marca opcional quando desconhecida.
 
 Validação: 47 testes passaram. Navegador validou cadastro sem compra/gasto, marca e categoria próprias, reposições repetidas no mesmo produto, compra opcional no cadastro e na edição, atualização de quantidade/custo médio, edição sem alteração de estoque, persistência e tela móvel.
+
+### Dados de contato da conta
+A criação de conta pede nome completo, e-mail e celular com DDD. Em Conta e backup, o titular pode atualizar nome e celular; o e-mail exibido é o endereço de autenticação. Os dados ficam separados dos lançamentos financeiros, no perfil do usuário (metadados Auth no Supabase; coluna profile na versão local). Contas anteriores continuam entrando sem preenchimento obrigatório retroativo. Não é necessário executar SQL adicional no Supabase.
+
+Cadastrar o celular não ativa notificações de WhatsApp. O envio automático está pendente de integração com um provedor oficial e de agendamento independente da hospedagem gratuita, que suspende o servidor inativo. Nenhuma mensagem é enviada por esta versão.
