@@ -36,3 +36,10 @@ Em Authentication > URL Configuration, mantenha Site URL `https://meu-equilibrio
 
 ### Limites de envio de e-mail para público
 A aplicação não pode aumentar quotas administrativas com a chave pública. Verifique Authentication > Rate Limits e a configuração de SMTP no painel. O remetente padrão do Supabase tem quota e restrições próprias para destinatários; aumentar apenas um número no painel não remove esses limites. Para maior capacidade e entrega a usuários do público em geral, configure SMTP próprio e confirme as condições do provedor; planos gratuitos podem exigir domínio verificado e ter quota. Sem essa configuração, não há promessa de aumento do volume de e-mails. O login Google não usa o remetente de confirmação do Supabase.
+
+### Páginas públicas para o Branding do Google
+As rotas `/privacidade` e `/termos` ficam disponíveis sem login e há links na tela de acesso. Após o deploy ficar Live, confira os endereços publicados antes de informá-los no Google Auth Platform > Branding:
+- Página inicial: `https://meu-equilibrio.onrender.com`
+- Política de Privacidade: `https://meu-equilibrio.onrender.com/privacidade`
+- Termos de Serviço: `https://meu-equilibrio.onrender.com/termos`
+O preenchimento desses links não garante aprovação ou liberação do Google; verifique os avisos restantes no painel. Os textos descrevem o funcionamento atual e usam o e-mail de suporte configurado pelo responsável na tela de consentimento. Atualize o contato e o conteúdo quando o tratamento de dados ou condições do serviço mudar.
