@@ -44,3 +44,8 @@ Validação: 37 testes passaram; teste de navegador com Supabase simulado exerci
 
 ## Identidade visual e ícone
 Logo própria aplicada no cabeçalho e no login. Favicon ICO, ícone Apple de 180px e ícones de 192/512px registrados no manifesto para atalhos e instalação pelo navegador. Assets são locais e não dependem de CDN. O manifesto usa modo standalone quando instalado por um navegador compatível; não implementa funcionamento offline. Para atualizar atalhos antigos que usam o ícone genérico, remova apenas o atalho e adicione novamente após a publicação (não limpe os dados da conta). O comportamento e os emblemas de atalhos dependem do navegador/Android. Arte original preservada em assets/logo-original.png; arquivos menores usados em execução.
+
+## Salvar senha — preferência de acesso
+A opção Salvar senha fica desmarcada por padrão. Ela mantém a sessão no aparelho, não armazena a senha em texto puro. Sem marcar, cookies são temporários e uma nova entrada/aba precisa de login; atualizar a mesma aba pode manter o acesso usando um marcador temporário em sessionStorage. Com opt-in explícito, a sessão usa cookies HttpOnly persistentes por até sete dias sem atividade, renováveis pelo Supabase. Renovações preservam a preferência; logout e redefinição de senha limpam os marcadores. Sessões persistentes antigas sem preferência registrada precisam de novo login. O salvamento/preenchimento de senha pelo navegador é independente dessa opção.
+
+SQLite local adiciona colunas de sessão de forma automática, sem modificar dados financeiros. Não requer novo SQL no Supabase. Validação: 40 testes passaram; navegador validou comportamento temporário e persistente, e servidor cloud com Supabase simulado validou renovação e limpeza de cookies.
