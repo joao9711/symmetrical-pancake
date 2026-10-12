@@ -65,3 +65,12 @@ Resumo de todos os segmentos é um consolidado explicitamente separado dos núme
 Dados antigos de Meu Negócio são mantidos integralmente em um espaço anterior, com seu perfil existente quando disponível. A migração ocorre no primeiro salvamento de segmento e não tenta dividir automaticamente registros mistos antigos: não há informação confiável para repartir caixa e vendas entre atividades. Novos segmentos começam vazios e separados. Tudo é armazenado no JSON por conta, incluído nos backups e protegido pelo controle de versão existente; não requer novo SQL no Supabase. Backups antigos seguem aceitos.
 
 Validação: 46 testes passaram. Navegador validou dois segmentos com produtos/clientes/vendas/caixas separados, consolidado, transferências pessoais de ambos, persistência, migração dos registros anteriores, falha de troca, cancelamento de troca com rascunho e telas notebook/celular.
+
+## Cadastro de produto e reposição separados
+Cadastrar produto não exige compra nem quantidade inicial e, por padrão, não altera estoque ou caixa. Informe nome, tipo/categoria, marca e preço unitário opcional. Cosméticos/perfumaria têm um catálogo amplo de tipos e marcas comuns (Avon, Natura, O Boticário e outras); Outros permite criar e reutilizar tipos e marcas fora da lista. Nome igual com marcas diferentes pode ter cadastros distintos.
+
+Repor estoque lista os produtos já cadastrados. Cada compra registra quantidade, custo por unidade e data, aumentando estoque e atualizando custo médio e caixa. Não cria outro produto. Há um botão de reposição no próprio produto. Dentro do cadastro/edição, Registrar uma compra agora é opcional e permite salvar os mesmos dados de compra junto com o cadastro. Serviços continuam sem estoque.
+
+A lista mostra quantidade disponível, vendidos, total comprado, preço de venda por unidade, custo médio por unidade e custo médio total do estoque. Editar cadastro permite atualizar marca, descrição, categoria e preço sem modificar estoque ou custos das compras já registradas. Não é possível converter produto/serviço quando há compras ou vendas; preços e descrições já registrados em vendas permanecem nas respectivas vendas. Registros antigos são preservados, com marca opcional quando desconhecida.
+
+Validação: 47 testes passaram. Navegador validou cadastro sem compra/gasto, marca e categoria próprias, reposições repetidas no mesmo produto, compra opcional no cadastro e na edição, atualização de quantidade/custo médio, edição sem alteração de estoque, persistência e tela móvel.

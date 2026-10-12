@@ -12,7 +12,7 @@ const rows=v=>Array.isArray(v)&&v.length<=5000&&v.every(r=>r&&text(r.id))&&new S
 function checkBusiness(b){if(!b||!['products','purchases','sales','payments','cash'].every(k=>rows(b[k])))return false;
  if(b.profile&&(!text(b.profile.segment)||!text(b.profile.niche)))return false;
  const ids=new Set(b.products.map(p=>p.id));
- if(!b.products.every(p=>text(p.name)&&money(p.price)&&(p.kind===undefined||['product','service'].includes(p.kind))&&(p.costCents===undefined||money(p.costCents))&&(p.segment===undefined||text(p.segment))&&(p.niche===undefined||text(p.niche))&&(p.category===undefined||text(p.category))))return false;
+ if(!b.products.every(p=>text(p.name)&&money(p.price)&&(p.kind===undefined||['product','service'].includes(p.kind))&&(p.costCents===undefined||money(p.costCents))&&(p.segment===undefined||text(p.segment))&&(p.niche===undefined||text(p.niche))&&(p.category===undefined||text(p.category))&&(p.brand===undefined||text(p.brand))))return false;
  if(!b.purchases.every(p=>ids.has(p.productId)&&b.products.find(x=>x.id===p.productId)?.kind!=='service'&&qty(p.qty)&&money(p.cost)&&p.qty*p.cost<=100000000000&&date(p.date)))return false;
  if(!b.sales.every(s=>text(s.customer)&&date(s.date)&&date(s.due)&&s.due>=s.date&&Array.isArray(s.items)&&s.items.length>0&&s.items.length<=100&&new Set(s.items.map(i=>i.productId)).size===s.items.length&&saleTotal(s)<=100000000000&&s.items.every(i=>i&&ids.has(i.productId)&&text(i.name)&&qty(i.qty)&&money(i.price)&&money(i.cost)&&money(i.costTotal)&&i.costTotal<=100000000000&&i.qty*i.price<=100000000000&&i.qty*i.cost<=100000000000)))return false;
  if(!b.payments.every(p=>b.sales.some(s=>s.id===p.saleId&&p.date>=s.date)&&date(p.date)&&money(p.cents)&&p.cents>0))return false;
