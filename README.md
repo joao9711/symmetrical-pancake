@@ -49,3 +49,10 @@ Logo própria aplicada no cabeçalho e no login. Favicon ICO, ícone Apple de 18
 A opção Salvar senha fica desmarcada por padrão. Ela mantém a sessão no aparelho, não armazena a senha em texto puro. Sem marcar, cookies são temporários e uma nova entrada/aba precisa de login; atualizar a mesma aba pode manter o acesso usando um marcador temporário em sessionStorage. Com opt-in explícito, a sessão usa cookies HttpOnly persistentes por até sete dias sem atividade, renováveis pelo Supabase. Renovações preservam a preferência; logout e redefinição de senha limpam os marcadores. Sessões persistentes antigas sem preferência registrada precisam de novo login. O salvamento/preenchimento de senha pelo navegador é independente dessa opção.
 
 SQLite local adiciona colunas de sessão de forma automática, sem modificar dados financeiros. Não requer novo SQL no Supabase. Validação: 40 testes passaram; navegador validou comportamento temporário e persistente, e servidor cloud com Supabase simulado validou renovação e limpeza de cookies.
+
+## Navegação e organização
+O site agora apresenta uma tela por vez. Finanças pessoais tem Resumo do mês, Lançamentos, Contas fixas, Dívidas e Orçamento. Meu Negócio tem Resumo do negócio, Vendas e clientes, Produtos e serviços, Caixa e Meu segmento. Conta e backup reúne exportação/importação e dados do acesso. No notebook a navegação fica na lateral; no celular todas as opções aparecem em um menu compacto.
+
+Resumo mostra indicadores e atalhos, sem todos os cadastros na mesma página. Formulários ficam recolhidos até o usuário abrir e voltam a se recolher após salvar. Edições e atalhos abrem o formulário correto. Há busca em lançamentos, fixos, dívidas, produtos/serviços e clientes. Feedback de salvamento fica disponível em qualquer tela, com confirmação temporária. A organização só move componentes da interface; não altera registros nem cálculos. A seção de orçamento total removida anteriormente continua ausente.
+
+Validação: 40 testes de cálculo/autenticação passaram; teste de navegador exercitou todas as telas e atalhos, formulários, buscas, pagamentos e os fluxos de negócio em notebook e celular.
