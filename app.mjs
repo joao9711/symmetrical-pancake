@@ -1,3 +1,4 @@
+import {initPasswordRecovery} from './password-ui.mjs';
 import {initChoices} from './choices.mjs';
 import {initPersonal} from './personal-ui.mjs';
 import {reservePercent} from './personal.mjs';
@@ -44,4 +45,5 @@ function selectArea(business){$('business-area').hidden=!business;$('personal-ar
 $('business-tab').onclick=()=>selectArea(true);$('personal-tab').onclick=()=>selectArea(false);
 personalUI=initPersonal({getState:()=>state,save:persist,getMonth:()=>$('month').value,today,currency,choices:choiceUI});
 render();
-try{showAccount(await api('me'));}catch{}
+const recoveryUI=initPasswordRecovery({api});
+if(!await recoveryUI.start()){try{showAccount(await api('me'));}catch{}}

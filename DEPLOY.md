@@ -17,3 +17,6 @@ Validação disponível: cálculos financeiros e fluxo local em navegador. A int
 
 ## Atualização de orçamento, dívidas e segmentos
 Não execute novamente o SQL para estes recursos: novas informações são adicionadas ao JSON financeiro da conta. O fluxo existente de RLS e controle de versão continua sendo usado. Após a nova publicação ficar Live, atualize a página. Edite dívidas antigas para informar total original e parcela mensal; sem esse cadastro, o sistema utiliza o saldo anterior como compromisso previsto. Nunca registre como despesa avulsa uma parcela já paga na área de dívidas. Opções personalizadas são salvas por conta e incluídas no backup.
+
+## Recuperação de senha
+A atualização inclui Esqueci minha senha e não requer novo SQL. Em Authentication > URL Configuration, Site URL deve ser https://meu-equilibrio.onrender.com (endereço já configurado anteriormente). O redirecionamento utilizado é a raiz desse site. Se trocar o domínio, configure PUBLIC_APP_URL no Render e ajuste os URLs permitidos no Supabase. Mantenha o template de e-mail Reset Password padrão com ConfirmationURL; templates customizados devem preservar o tipo recovery. Teste o e-mail de recuperação em uma conta sua após a publicação, sem compartilhar links ou tokens.

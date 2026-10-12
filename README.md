@@ -30,7 +30,14 @@ Valores de dívida devem incorporar os encargos conhecidos; pagamentos reduzem i
 ## Dados e limites
 Novos recursos ficam no JSON por conta já existente; não requerem novo SQL no Supabase. Backups incluem todas as áreas e opções personalizadas. Importar substitui todos os dados da conta após confirmação. Atualize a página para carregar mudanças feitas em outro aparelho; salvamentos conflitantes são rejeitados. O caixa do negócio continua separado das finanças pessoais, exceto transferências explicitamente escolhidas.
 
-Ainda não há compras a prazo para estoque, múltiplos vencimentos de uma mesma venda, devoluções, edição/cancelamento de vendas, recuperação de senha, verificação de validade de produtos, PWA ou modo offline. Não envie data/, arquivos .env ou credenciais ao Git.
+Ainda não há compras a prazo para estoque, múltiplos vencimentos de uma mesma venda, devoluções, edição/cancelamento de vendas, verificação de validade de produtos, PWA ou modo offline. Não envie data/, arquivos .env ou credenciais ao Git.
 
 ## Validação da versão
 29 testes de cálculo e validação passaram. Testes de navegador em 390 e 1366 pixels validaram cadastro, finanças fixas, edição histórica, dívidas e despesas vinculadas, categorias personalizadas, orçamento mensal/geral, segmento/nicho, produtos, serviços, estoque, vendas, pagamentos, transferências e persistência. Testes HTTP validaram isolamento entre contas, salvamento em outra sessão, conflitos e rejeição de pagamentos excedentes. O comando cloud iniciou e serviu todos os módulos em teste local; isso não verifica o Supabase real. O acesso de verificação ao domínio Render foi bloqueado pela política de rede deste ambiente; verifique Live após o deploy automático.
+
+## Recuperação de senha
+Na versão publicada, Esqueci minha senha envia um link pelo Supabase. O usuário abre o link e informa a nova senha duas vezes. A senha deve ter 10 a 128 caracteres. Tokens são removidos da URL e mantidos somente em memória até concluir ou cancelar; a senha só é alterada depois de validar o token no Supabase. Nenhum registro financeiro é modificado. Sessões de refresh são revogadas quando o provedor permite; tokens JWT já emitidos podem continuar válidos até a expiração.
+
+O retorno usa a raiz HTTPS de PUBLIC_APP_URL, cujo padrão é https://meu-equilibrio.onrender.com. No Supabase, mantenha Site URL e redirecionamentos compatíveis com esse endereço e o template de recuperação padrão. Limites de e-mail do plano Supabase continuam aplicáveis. O modo SQLite local não envia e-mail e apresenta uma mensagem explicativa.
+
+Validação: 37 testes passaram; teste de navegador com Supabase simulado exercitou envio, limite de solicitações, callbacks, senhas diferentes, sucesso e link inválido. A entrega real de e-mails não foi validada neste ambiente.
