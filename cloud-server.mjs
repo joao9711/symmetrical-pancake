@@ -1,3 +1,4 @@
+import {createGoogleAuth,googleCookie} from './google-auth.mjs';
 import {createConfirmation,confirmationFailure} from './confirmation.mjs';
 import {normalizeProfile,publicProfile} from './profile.mjs';
 import {validVisit,allowVisit,sessionCookies,clearSessionCookies} from './login-session.mjs';
@@ -9,10 +10,11 @@ import {valid} from './validation.mjs';
 const base=process.env.SUPABASE_URL,key=process.env.SUPABASE_PUBLISHABLE_KEY;
 if(!base||!key)throw Error('Configure SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY. Não use chave service_role.');
 if(new URL(base).protocol!=='https:')throw Error('Supabase requer HTTPS.');
-const files={'/manifest.webmanifest':'manifest.webmanifest','/assets/favicon.ico':'assets/favicon.ico','/assets/icon-180.png':'assets/icon-180.png','/assets/icon-192.png':'assets/icon-192.png','/assets/icon-512.png':'assets/icon-512.png','/':'index.html','/confirmation-ui.mjs':'confirmation-ui.mjs','/calculator.mjs':'calculator.mjs','/profile.mjs':'profile.mjs','/app.mjs':'app.mjs','/feedback.mjs':'feedback.mjs','/layout.mjs':'layout.mjs','/password-ui.mjs':'password-ui.mjs','/finance.mjs':'finance.mjs','/style.css':'style.css','/business.mjs':'business.mjs','/cosmetics.mjs':'cosmetics.mjs','/business-workspaces.mjs':'business-workspaces.mjs','/business-ui.mjs':'business-ui.mjs','/recurring.mjs':'recurring.mjs','/recurring-ui.mjs':'recurring-ui.mjs','/personal.mjs':'personal.mjs','/personal-ui.mjs':'personal-ui.mjs','/choices.mjs':'choices.mjs','/segments.mjs':'segments.mjs','/validation.mjs':'validation.mjs'};
+const files={'/manifest.webmanifest':'manifest.webmanifest','/assets/favicon.ico':'assets/favicon.ico','/assets/icon-180.png':'assets/icon-180.png','/assets/icon-192.png':'assets/icon-192.png','/assets/icon-512.png':'assets/icon-512.png','/':'index.html','/google-ui.mjs':'google-ui.mjs','/confirmation-ui.mjs':'confirmation-ui.mjs','/calculator.mjs':'calculator.mjs','/profile.mjs':'profile.mjs','/app.mjs':'app.mjs','/feedback.mjs':'feedback.mjs','/layout.mjs':'layout.mjs','/password-ui.mjs':'password-ui.mjs','/finance.mjs':'finance.mjs','/style.css':'style.css','/business.mjs':'business.mjs','/cosmetics.mjs':'cosmetics.mjs','/business-workspaces.mjs':'business-workspaces.mjs','/business-ui.mjs':'business-ui.mjs','/recurring.mjs':'recurring.mjs','/recurring-ui.mjs':'recurring-ui.mjs','/personal.mjs':'personal.mjs','/personal-ui.mjs':'personal-ui.mjs','/choices.mjs':'choices.mjs','/segments.mjs':'segments.mjs','/validation.mjs':'validation.mjs'};
 const empty={entries:[],debts:[],reserve:20};
 function send(res,status,data){res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(data));}
 async function remote(path,method='GET',body,token){const response=await fetch(base+path,{method,headers:requestHeaders(key,token),body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(15000)});const data=await response.json().catch(()=>null);if(!response.ok){const error=Error('Serviço indisponível');error.status=response.status;error.code=data?.error_code||data?.code;throw error;}return data;}
+const google=createGoogleAuth(remote,base,process.env.PUBLIC_APP_URL||'https://meu-equilibrio.onrender.com');
 const confirmation=createConfirmation(remote,process.env.PUBLIC_APP_URL||'https://meu-equilibrio.onrender.com');
 const recovery=createRecovery(remote,process.env.PUBLIC_APP_URL||'https://meu-equilibrio.onrender.com');
 function cookies(res,value,remember,visit){res.setHeader('Set-Cookie',sessionCookies(value,remember,visit,process.env.COOKIE_SECURE!=='0'));}
@@ -25,6 +27,13 @@ http.createServer(async(req,res)=>{try{
  if(path.startsWith('/api/')){
   if(req.headers.origin&&new URL(req.headers.origin).host!==req.headers.host)return send(res,403,{error:'Origem inválida.'});
   let body={};if(['POST','PUT'].includes(req.method)){if(!req.headers['content-type']?.startsWith('application/json'))return send(res,415,{error:'Formato inválido.'});let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>5000000)return send(res,413,{error:'Dados muito grandes.'});}try{body=JSON.parse(raw);}catch{return send(res,400,{error:'Dados inválidos.'});}}
+  if(path==='/api/google/start'&&req.method==='POST'){
+   try{const result=await google.start(body);res.setHeader('Set-Cookie',googleCookie(result.value,process.env.COOKIE_SECURE!=='0'));return send(res,200,{url:result.url});}catch(error){return send(res,503,{error:error.status?'Não foi possível conectar ao Google. Tente novamente.':error.message});}
+  }
+  if(path==='/api/google/finish'&&req.method==='POST'){
+   res.setHeader('Set-Cookie',googleCookie('',process.env.COOKIE_SECURE!=='0'));
+   try{const result=await google.finish(body.code,readCookies(req).google_login);const data=await account(result.session.user,result.session.access_token);res.setHeader('Set-Cookie',[...sessionCookies(result.session,result.remember,result.visit,process.env.COOKIE_SECURE!=='0'),googleCookie('',process.env.COOKIE_SECURE!=='0')]);return send(res,200,data);}catch{return send(res,400,{error:'Não foi possível concluir o acesso pelo Google. Tente entrar novamente pelo botão Google.'});}
+  }
   if(path==='/api/resend-confirmation'&&req.method==='POST'){
    const email=typeof body.email==='string'?body.email.trim().toLowerCase():'';
    if(!validEmail(email))return send(res,400,{error:'Informe o e-mail da sua conta.'});

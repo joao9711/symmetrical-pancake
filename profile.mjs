@@ -11,5 +11,7 @@ export function normalizeProfile(value) {
  return {fullName,phone:'+'+digits,...(photo?{photo}:{})};
 }
 export function publicProfile(value) {
- return normalizeProfile(value)||{fullName:'',phone:''};
+ if(normalizeProfile(value))return normalizeProfile(value);
+ const name=value?.fullName||value?.full_name||value?.name;
+ return {fullName:typeof name==='string'?name.trim().slice(0,100):'',phone:''};
 }

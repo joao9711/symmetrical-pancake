@@ -1,3 +1,4 @@
+import {initGoogle} from './google-ui.mjs';
 import {initConfirmation} from './confirmation-ui.mjs';
 import {initCalculator} from './calculator.mjs';
 import {setFeedback} from './feedback.mjs';
@@ -24,7 +25,7 @@ let state={entries:[],debts:[],reserve:20};
 const choiceUI=initChoices({getState:()=>state});
 const entryForm=$('entry-form'),entryCategory=choiceUI.create(entryForm.elements.namedItem('category'),'entryCategories',['Alimentação','Moradia','Transporte','Saúde','Lazer','Salário']);
 $('month').value=today.slice(0,7);$('date').value=today;$('reserve').value=reservePercent(state);
-let visit=null;try{if(performance.getEntriesByType('navigation')[0]?.type==='reload')visit=sessionStorage.getItem('meu-equilibrio-visit');else sessionStorage.removeItem('meu-equilibrio-visit');}catch{}
+let visit=null;try{if(performance.getEntriesByType('navigation')[0]?.type==='reload'||new URLSearchParams(location.search).get('google_callback')==='1')visit=sessionStorage.getItem('meu-equilibrio-visit');else sessionStorage.removeItem('meu-equilibrio-visit');}catch{}
 function newVisit(){visit=crypto.randomUUID();try{sessionStorage.setItem('meu-equilibrio-visit',visit);}catch{}return visit;}
 function forgetVisit(){visit=null;try{sessionStorage.removeItem('meu-equilibrio-visit');}catch{}}
 async function api(path,method='GET',body){const response=await fetch('/api/'+path,{method,headers:{...(body?{'Content-Type':'application/json'}:{}),...(visit?{'X-Session-Visit':visit}:{})},body:body?JSON.stringify(body):undefined});const data=await response.json();if(!response.ok)throw Error(data.error||'Falha de conexão');return data;}
@@ -65,6 +66,7 @@ personalUI=initPersonal({getState:()=>state,save:persist,getMonth:()=>$('month')
 render();
 window.addEventListener('pageshow',async event=>{if(event.persisted){forgetVisit();document.querySelector('main').hidden=true;try{showAccount(await api('me'));}catch{$('auth').hidden=false;}}});
 const recoveryUI=initPasswordRecovery({api});
+const googleUI=initGoogle({api,newVisit,restoreVisit(){try{visit=sessionStorage.getItem('meu-equilibrio-visit');}catch{}},showAccount});
 const confirmationUI=initConfirmation({api});
 window.addEventListener('hashchange',()=>confirmationUI.start());
-if(!await confirmationUI.start()&&!await recoveryUI.start()){try{showAccount(await api('me'));}catch{}}
+if(!await googleUI.start()&&!await confirmationUI.start()&&!await recoveryUI.start()){try{showAccount(await api('me'));}catch{}}
