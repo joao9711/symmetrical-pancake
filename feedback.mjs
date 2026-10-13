@@ -5,6 +5,7 @@ export function setFeedback(element,text,kind='error'){
  if(!text){delete element.dataset.feedback;return;}
  element.dataset.feedback=kind;
  element.setAttribute('role',kind==='error'?'alert':'status');
+ if(kind==='success'&&element.id==='storage-message')timers.set(element,setTimeout(()=>setFeedback(element,''),3500));
 }
 
 export function setDeletionFeedback(element,text){
