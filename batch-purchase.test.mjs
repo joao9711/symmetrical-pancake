@@ -35,3 +35,6 @@ test('aporte automático inclui frete e embalagens sem duplicar o total pago',as
 test('pagamento com caixa preserva investimento anterior e fonte inválida é recusada',async()=>{
  const {addPurchaseWithExpenses}=await import('./business.mjs');const b=make();b.cash=[{id:'capital',type:'investment',description:'Capital',cents:10000,date:'2026-10-10'}];const next=addPurchaseWithExpenses(b,'p',[{variantId:'a',qty:1,cost:6000}],'2026-10-13',[],undefined,'cash');assert.equal(businessSummary(next,'2026-10').cash,4000);assert.equal(next.cash.length,1);assert.throws(()=>addPurchaseWithExpenses(b,'p',[{variantId:'a',qty:1,cost:6000}],'2026-10-13',[],undefined,''));assert.equal(b.cash.length,1);
 });
+test('descrição das movimentações é opcional e recebe nome pela categoria ou tipo',async()=>{
+ const {addCashBatch}=await import('./business.mjs');const next=addCashBatch(make(),[{type:'investment',description:'',cents:1000},{type:'expense',description:'  ',category:'Frete',cents:500},{type:'withdrawal',cents:100}],'2026-10-13');assert.deepEqual(next.cash.map(c=>c.description),['Aporte','Frete','Retirada']);assert.ok(validBusiness(next));assert.throws(()=>addCashBatch(make(),[{type:'expense',description:42,cents:100}],'2026-10-13'));
+});
