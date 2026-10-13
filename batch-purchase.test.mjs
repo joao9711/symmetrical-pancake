@@ -38,3 +38,9 @@ test('pagamento com caixa preserva investimento anterior e fonte inválida é re
 test('descrição das movimentações é opcional e recebe nome pela categoria ou tipo',async()=>{
  const {addCashBatch}=await import('./business.mjs');const next=addCashBatch(make(),[{type:'investment',description:'',cents:1000},{type:'expense',description:'  ',category:'Frete',cents:500},{type:'withdrawal',cents:100}],'2026-10-13');assert.deepEqual(next.cash.map(c=>c.description),['Aporte','Frete','Retirada']);assert.ok(validBusiness(next));assert.throws(()=>addCashBatch(make(),[{type:'expense',description:42,cents:100}],'2026-10-13'));
 });
+test('histórico manual agrupa aporte e despesa com soma e saldo distintos sem alterar o caixa',async()=>{
+ const {manualCashDays}=await import('./business.mjs');const b=make();b.cash=[{id:'aporte',type:'investment',description:'Capital próprio',cents:6000,date:'2026-10-13'},{id:'frete',type:'expense',description:'Frete',cents:1700,date:'2026-10-13'},{id:'other',type:'expense',description:'Embalagem',cents:500,date:'2026-10-12'}];const days=manualCashDays(b);assert.equal(days.length,2);assert.equal(days[0].total,7700);assert.equal(days[0].net,4300);assert.equal(days[0].entries.length,2);assert.equal(days[1].date,'2026-10-12');assert.equal(days.reduce((sum,day)=>sum+day.net,0),businessSummary(b,'2026-10').cash);assert.equal(b.cash.length,3);
+});
+test('agrupamento manual não repete os aportes e gastos automáticos de compras',async()=>{
+ const {manualCashDays,addPurchaseWithExpenses}=await import('./business.mjs');const b=addPurchaseWithExpenses(make(),'p',[{variantId:'a',qty:1,cost:10000}],'2026-10-13',[{description:'Frete',cents:1000}],undefined,'own');assert.deepEqual(manualCashDays(b),[]);assert.equal(b.cash.length,2);
+});
