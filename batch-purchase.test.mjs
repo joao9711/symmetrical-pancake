@@ -1,0 +1,16 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {emptyBusiness,addPurchaseBatch,inventory,businessSummary,validBusiness} from './business.mjs';
+const make=()=>({...emptyBusiness(),products:[{id:'p',name:'Essencial',price:15000,variants:[{id:'a',fragrance:'Oud',volumeMl:100,price:15000},{id:'b',fragrance:'Floral',volumeMl:100,price:14000},{id:'c',fragrance:'Masculino',volumeMl:50,price:10000}]}]});
+test('compra única de três fragrâncias atualiza estoques e caixa com custos distintos',()=>{
+ const b=make();let n=0;const next=addPurchaseBatch(b,'p',[{variantId:'a',qty:1,cost:10000},{variantId:'b',qty:1,cost:9000},{variantId:'c',qty:1,cost:6000}],'2026-10-13',()=>String(++n));assert.ok(validBusiness(next));assert.equal(next.purchases.length,3);for(const id of ['a','b','c'])assert.equal(inventory(next,'p',id).qty,1);assert.equal(inventory(next,'p').value,25000);assert.equal(businessSummary(next,'2026-10').cash,-25000);assert.equal(b.purchases.length,0);
+});
+test('erro em qualquer linha impede compra parcial e aceita subset de variações',()=>{
+ const b=make();assert.throws(()=>addPurchaseBatch(b,'p',[{variantId:'a',qty:1,cost:10000},{variantId:'invalid',qty:1,cost:10000}],'2026-10-13'));assert.equal(b.purchases.length,0);assert.throws(()=>addPurchaseBatch(b,'p',[],'2026-10-13'));assert.throws(()=>addPurchaseBatch(b,'p',[{variantId:'a',qty:1,cost:1000},{variantId:'a',qty:1,cost:1000}],'2026-10-13'));assert.throws(()=>addPurchaseBatch(b,'p',[{variantId:'a',qty:1,cost:1000}],'2026-02-30'));assert.equal(addPurchaseBatch(b,'p',[{variantId:'b',qty:2,cost:0}],'2026-10-13').purchases.length,1);
+});
+test('reposição individual anterior e produto sem variações continuam válidos',()=>{
+ const b=make();b.purchases=[{id:'old',productId:'p',variantId:'a',qty:1,cost:5000,date:'2026-10-10'}];const next=addPurchaseBatch(b,'p',[{variantId:'a',qty:1,cost:10000}],'2026-10-13');assert.deepEqual(next.purchases[0],b.purchases[0]);assert.equal(inventory(next,'p','a').cost,7500);const plain={...emptyBusiness(),products:[{id:'plain',name:'Creme',price:1000}]};assert.ok(validBusiness(addPurchaseBatch(plain,'plain',[{qty:1,cost:500}],'2026-10-13')));
+});
+test('movimentações em lote usam vínculos específicos e são salvas em conjunto',async()=>{
+ const {addCashBatch,deleteProduct}=await import('./business.mjs');const b=make();const next=addCashBatch(b,[{type:'investment',description:'Capital Oud',cents:10000,productId:'p',variantId:'a'},{type:'investment',description:'Capital Floral',cents:9000,productId:'p',variantId:'b'}],'2026-10-13');assert.ok(validBusiness(next));assert.equal(next.cash.length,2);assert.equal(businessSummary(next,'2026-10').invested,19000);assert.equal(deleteProduct(next,'p').cash.length,0);assert.equal(b.cash.length,0);assert.throws(()=>addCashBatch(b,[{type:'investment',description:'Capital',cents:1000},{type:'expense',description:'Inválido',cents:-1}],'2026-10-13'));assert.throws(()=>addCashBatch(b,[{type:'investment',description:'Capital',cents:1000,productId:'p',variantId:'unknown'}],'2026-10-13'));assert.throws(()=>addCashBatch(b,[],'2026-10-13'));
+});
