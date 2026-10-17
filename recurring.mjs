@@ -1,8 +1,8 @@
-import {debtEntries,debtForecast,transferEntries} from './personal.mjs';
+import {debtEntries,debtForecast,transferEntries,stockWithdrawalEntries} from './personal.mjs';
 const monthPattern=/^\d{4}-(0[1-9]|1[0-2])$/;
 export function versionFor(rule,month){return [...rule.versions].reverse().find(v=>v.from<=month);}
 export function fixedForMonth(state,month){const result=[];const records=state.fixedRecords||[];for(const rule of state.fixed||[]){const record=records.find(r=>r.ruleId===rule.id&&r.month===month);if(record?.status==='skipped')continue;if(record?.status==='confirmed'){result.push({...record.entry,id:`fixed:${rule.id}:${month}`,ruleId:rule.id,fixed:true,confirmed:true});continue;}const v=versionFor(rule,month);if(!v?.enabled)continue;const [year,m]=month.split('-').map(Number);const last=new Date(Date.UTC(year,m,0)).getUTCDate();result.push({id:`fixed:${rule.id}:${month}`,ruleId:rule.id,fixed:true,confirmed:false,type:v.type,description:v.description,cents:v.cents,category:v.category,date:`${month}-${String(Math.min(v.day,last)).padStart(2,'0')}`});}return result;}
-export function personalEntries(state,month,planned=false){return [...state.entries.filter(e=>e.date.startsWith(month)),...fixedForMonth(state,month).filter(e=>planned||e.confirmed),...debtEntries(state,month),...transferEntries(state,month),...(planned?debtForecast(state,month):[])];}
+export function personalEntries(state,month,planned=false){return [...state.entries.filter(e=>e.date.startsWith(month)),...fixedForMonth(state,month).filter(e=>planned||e.confirmed),...debtEntries(state,month),...transferEntries(state,month),...stockWithdrawalEntries(state,month),...(planned?debtForecast(state,month):[])];}
 export function reviseRule(rule,version){return {...rule,versions:[...rule.versions.filter(v=>v.from<version.from),version]};}
 const text=v=>typeof v==='string'&&v.trim().length>0&&v.length<=100;
 const money=v=>Number.isSafeInteger(v)&&v>0&&v<=100000000000;
